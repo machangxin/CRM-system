@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.st.dao.CustomerDao">
+<sql id = "customer_select_where">
+		customer_id like '%${check}%' or
+		Customer_name like '%${check}%' or
+		Customer_tel like '%${check}%' or
+		Customer_addr like '%${check}%' or
+		Customer_user_id like '%${check}%' or
+		Customer_state like '%${check}%' or
+		Customer_liaison like '%${check}%'
+	</sql>
+	<!-- SQL语句 -->
+	<select id="test" resultType="string">
+		select now()
+	</select>
+	<!-- 客户查询-->
+	<select id="getCustomerCount" resultType="int"
+		parameterType="map">
+		select count(customer_id) from crm_customer where <include refid="customer_select_where"></include>
+	</select>
+	<select id="customer_list" resultType="map" parameterType="map">
+		select * from crm_customer where <include refid="customer_select_where"></include> limit ${start},${limit}
+	</select>
+	<!-- 公海客户显示 -->
+	<select id="publiccustomer_list" resultType="map" parameterType="map">
+		select * from crm_customer where customer_state=0 limit ${start},${limit}
+	</select>
+		<select id="getpublicCustomerCount" resultType="int"
+		parameterType="map">
+		select count(customer_id) from crm_customer where (<include refid="customer_select_where"></include>) and Customer_state=0
+	</select>
+	<delete id="customer_del" parameterType="map">
+		delete from crm_customer
+		where customer_id=#{customer_id}
+	</delete>
+	<update id="customer_update" parameterType="map">
+		update crm_customer
+		set
+		Customer_tel=#{Customer_tel},Customer_addr=#{Customer_addr},Customer_state=#{Customer_state},Customer_liaison=#{Customer_liaison},Customer_user_id=#{Customer_user_id}
+		where customer_id=#{Customer_id}
+	</update>
+		<!-- 公海客户添加跟单员id -->
+	<update id="customer_track" parameterType="map">
+		update crm_customer
+		set
+		Customer_state=#{Customer_state},Customer_user_id=#{loginuserId}
+		where customer_id=#{customer_id}
+	</update>
+	<delete id="cust_del_more" parameterType="map">
+		delete from
+		crm_customer where customer_id in (${custids})
+	</delete>
+	<insert id="customer_save" parameterType="map">
+		insert into
+		crm_customer(customer_id,Customer_name,Customer_tel,Customer_addr,Customer_state,Customer_user_id,Customer_liaison)
+		values(#{uuid},#{Customer_name},#{Customer_tel},#{Customer_addr},#{Customer_state},#{loginuserId},#{Customer_liaison})
+	</insert>
+		<!-- 私有客户显示 -->
+	<select id="privatecustomer_list" resultType="map" parameterType="map">
+		select * from crm_customer where customer_state=1 and Customer_user_id=#{loginuserId} limit ${start},${limit}
+	</select>
+		<select id="getprivateCustomerCount" resultType="int"
+		parameterType="map">
+		select count(customer_id) from crm_customer where (<include refid="customer_select_where"></include>) and Customer_state=1 and Customer_user_id=#{loginuserId}
+	</select>
+		<update id="customer_quit" parameterType="map">
+		update crm_customer
+		set
+		Customer_state=#{Customer_state},Customer_user_id=""
+		where customer_id=#{customer_id}
+	</update>
+</mapper>

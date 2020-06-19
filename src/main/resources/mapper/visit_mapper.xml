@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.st.dao.VisitDao">
+	<insert id="customer_visit" parameterType="map">
+	insert into crm_visitlog(Visit_id,Visit_time,Visit_user_id,Visit_customer_id,Visit_customer_info,Visit_payment,Visit_money)
+	values(#{uuid},now(),#{loginuserId},#{visit_customer_id},#{visit_customer_info},#{visit_payment},#{visit_money})  
+	</insert>
+	
+	<select id="visitlog_list" parameterType="map" resultType="map">
+		select Visit_time,User_realname,User_id,Visit_payment,Visit_money,Visit_customer_info 
+		from crm_visitlog a left join crm_user b on a.Visit_user_id=b.User_id 
+		where Visit_customer_id=#{customer_id} order by Visit_time desc
+	</select>
+	
+	<select id="total_sales" resultType="map">
+		SELECT a.User_realname,sum(b.Visit_money) as money from crm_user as a LEFT JOIN crm_visitlog as b
+on a.User_id = b.Visit_user_id GROUP BY a.User_id
+	</select>
+	<select id="cust_total_sales" resultType="map">
+		SELECT sum(b.Visit_money) as value,a.Customer_name as name  from crm_customer as a LEFT JOIN crm_visitlog as b
+on a.customer_id = b.Visit_customer_id GROUP BY a.customer_id
+	</select>
+	<select id="total_count" resultType="map">
+		SELECT a.User_realname as name,count(b.Visit_id) as value from crm_user as a LEFT JOIN crm_visitlog as b
+on a.User_id = b.Visit_user_id GROUP BY a.User_id
+	</select>
+	<select id="month_sales" resultType="map">
+	SELECT DATE_FORMAT(Visit_time, '%b') AS month,SUM(Visit_money) AS buy FROM crm_visitlog WHERE YEAR (Visit_time) = 2020 GROUP BY MONTH (Visit_time)
+	order BY MONTH (Visit_time)
+
+	</select>
+</mapper>
